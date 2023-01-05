@@ -1,1 +1,2 @@
 requests==2.17.1
+pytest== 7.1.1 #--hash=sha256:92f723789a8fdd7180b6b06483874feca4c48a5c76968e03bb3e7f806a1869ea

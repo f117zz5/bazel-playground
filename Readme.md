@@ -31,3 +31,5 @@ bazel run :main
 ## References
 
 * YouTube tutorial [here](https://www.youtube.com/watch?v=y9GpV_K17xo)
+* Next to watch: third_party tutorial, link [here](https://www.youtube.com/watch?v=bhirT014eCE). Complete playlist [here](https://www.youtube.com/watch?v=y9GpV_K17xo&list=PLDgAeh9AGP98VZoFi39t0jXYqkHzcC01m).
+* Another good tutorial [here](https://testdriven.io/blog/bazel-builds/).
