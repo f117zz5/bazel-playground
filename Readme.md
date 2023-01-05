@@ -27,3 +27,7 @@ Run it with
 ```shell
 bazel run :main
 ```
+
+## References
+
+* YouTube tutorial [here](https://www.youtube.com/watch?v=y9GpV_K17xo)
