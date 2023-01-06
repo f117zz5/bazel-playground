@@ -28,6 +28,20 @@ Run it with
 bazel run :main
 ```
 
+## generate the `requirements.txt` file
+
+In order to generate the requirements.txt `pip-tools` tools shall be needed, if needed install them with:
+
+```shell
+pip install pip-tools
+```
+
+Define the python modules needed in `requirements.in` and let `pip-tools` generate the `requirements.txt` file:
+
+```shell
+python3 -m piptools compile requirements.in 
+```
+
 ## References
 
 * YouTube tutorial [here](https://www.youtube.com/watch?v=y9GpV_K17xo)
