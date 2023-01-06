@@ -39,7 +39,7 @@ pip install pip-tools
 Define the python modules needed in `requirements.in` and let `pip-tools` generate the `requirements.txt` file:
 
 ```shell
-python3 -m piptools compile requirements.in 
+pip-compile --resolver=backtracking requirements.in
 ```
 
 ## References
