@@ -2,6 +2,14 @@
 
 This is my personal bazel playground heavily inspired by this [Bazel Examples](https://github.com/bazelbuild/examples) and the tutorials listed under the Reference section.
 
+## About this Python application
+
+It is just a very simple python application, loading few modules and printing few strings. The purpose of this repository is to configure the Python environment and execution with Bazel. Run it with
+
+```shell
+bazel run :main
+```
+
 ## generate the `requirements.txt` file
 
 In order to generate the requirements.txt `pip-tools` tools shall be needed, if needed install them with:
