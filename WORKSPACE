@@ -1,10 +1,16 @@
+"""
+In this WORKSPACE:
+ - load riles_python, then define the python version and pin the requirements
+ - load the direct third_party dependencies
+"""
 
+# load the direct third_party dependencies
 load("//third_party:third_party.bzl", "load_third_party_libraries")
-
 load_third_party_libraries()
 
 
-
+#-----------------------------
+# set up python version and modules needed
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
@@ -26,3 +32,4 @@ pip_parse(
 load("@my_pip_install//:requirements.bzl", "install_deps")
 # Call it to define repos for your requirements.
 install_deps()
+#-----------------------------
