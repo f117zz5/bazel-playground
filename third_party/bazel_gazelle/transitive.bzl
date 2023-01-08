@@ -9,4 +9,5 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 def load_bazel_gazelle_transitive_dependencies():
     gazelle_dependencies()
-    go_repository()
+    # go_repository() results in a bazel crash
+    #go_repository() 
