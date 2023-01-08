@@ -26,7 +26,7 @@ pip-compile --resolver=backtracking requirements.in
 
 ## Investigating dependencies
 
-Good starting point is the Bazel Documentation (here)[https://bazel.build/query/guide].
+Good starting point is the Bazel Documentation [here](https://bazel.build/query/guide).
 
 ## References
 
