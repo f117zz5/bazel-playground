@@ -8,14 +8,17 @@ load the package with the version that we want, and then the third party library
 package.
 """
 
-#load("//third_party/buildtools:transitive.bzl", "load_buildtools_transitive_dependencies")
+load("//third_party/bazel_gazelle:transitive.bzl", "load_bazel_gazelle_transitive_dependencies")
 load("//third_party/bazel_skylib:transitive.bzl", "load_bazel_skylib_transitive_dependencies")
+load("//third_party/buildtools:transitive.bzl", "load_buildtools_transitive_dependencies")
 load("//third_party/protobuf:transitive.bzl", "load_protobuf_transitive_dependencies")
+load("//third_party/rules_go:transitive.bzl", "load_rules_go_transitive_dependencies")
 
 
 def load_transitive_dependencies():
     """Load the transitive dependencies of only our direct dependencies"""
-    # load_buildtools_transitive_dependencies()
+    load_bazel_gazelle_transitive_dependencies()
     load_bazel_skylib_transitive_dependencies()
+    load_buildtools_transitive_dependencies()
     load_protobuf_transitive_dependencies()
-
+    load_rules_go_transitive_dependencies()
