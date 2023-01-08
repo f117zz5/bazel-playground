@@ -24,6 +24,10 @@ Define the python modules needed in `requirements.in` and let `pip-tools` genera
 pip-compile --resolver=backtracking requirements.in
 ```
 
+## Investigating dependencies
+
+Good starting point is the Bazel Documentation (here)[https://bazel.build/query/guide].
+
 ## References
 
 * YouTube tutorial [here](https://www.youtube.com/watch?v=y9GpV_K17xo)

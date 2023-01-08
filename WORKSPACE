@@ -4,10 +4,15 @@ In this WORKSPACE:
  - load the direct third_party dependencies
 """
 
+workspace(name = "my_playground")
+
 # load the direct third_party dependencies
 load("//third_party:third_party.bzl", "load_third_party_libraries")
 load_third_party_libraries()
 
+# load the transitive third_party dependencies
+load("//third_party:transitive_dependencies.bzl", "load_transitive_dependencies")
+load_transitive_dependencies()
 
 #-----------------------------
 # set up python version and modules needed
