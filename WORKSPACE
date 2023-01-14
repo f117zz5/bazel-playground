@@ -29,7 +29,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "my_pip_install",
-    requirements = "//:requirements.txt", 
+    requirements = "//:requirements_lock.txt", 
     python_interpreter_target = interpreter
 )
 
