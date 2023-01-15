@@ -10,18 +10,43 @@ It is just a very simple python application, loading few modules and printing fe
 bazel run :main
 ```
 
-## generate the `requirements.txt` file
+## generate the `requirements_lock.txt` file
 
-In order to generate the requirements.txt `pip-tools` tools shall be needed, if needed install them with:
+In order to generate the requirements_lock.txt add the following code to the BUILD file on top level:
 
-```shell
-pip install pip-tools
+```python
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+)
 ```
 
-Define the python modules needed in `requirements.in` and let `pip-tools` generate the `requirements.txt` file:
+This will add new runnable bazel targets:
 
 ```shell
-pip-compile --resolver=backtracking requirements.in
+bazelisk query //...
+Starting local Bazel server and connecting to it...
+//:requirements
+//:requirements.update
+//:requirements_test
+//src:main
+Loading: 9 packages loaded
+```
+
+Create an empty `requirements_lock.txt` file:
+
+```shell
+touch requirements_lock.txt
+```
+
+Define the python modules needed in `requirements.in` and run `//:requirements.update` to generate the `requirements_lock.txt` file:
+
+```shell
+bazelisk run //:requirements.update
 ```
 
 ## Investigating dependencies
