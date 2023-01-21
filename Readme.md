@@ -55,8 +55,10 @@ Good starting point is the Bazel Documentation [here](https://bazel.build/query/
 
 The `bazel sync` seems to be interesting when it comes up to resolving dependencies, here a [Bazel Blog article on sync][1].
 
+Example to play around with:
+
 ```shell
-bazelisk sync --only=rules_python --experimental_repository_resolved_file=resolved.bzl
+bazelisk --output_base=~/bazel_output_base sync --only=rules_python --experimental_repository_resolved_file=resolved.bzl
 ```
 
 ## Tutorials
