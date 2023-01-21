@@ -53,8 +53,20 @@ bazelisk run //:requirements.update
 
 Good starting point is the Bazel Documentation [here](https://bazel.build/query/guide).
 
-## References
+The `bazel sync` seems to be interesting when it comes up to resolving dependencies, here a [Bazel Blog article on sync][1].
+
+```shell
+bazelisk sync --only=rules_python --experimental_repository_resolved_file=resolved.bzl
+```
+
+## Tutorials
 
 * YouTube tutorial [here](https://www.youtube.com/watch?v=y9GpV_K17xo)
 * Next to watch: third_party tutorial, link [here](https://www.youtube.com/watch?v=bhirT014eCE). Complete playlist [here](https://www.youtube.com/watch?v=y9GpV_K17xo&list=PLDgAeh9AGP98VZoFi39t0jXYqkHzcC01m).
 * Another good tutorial [here](https://testdriven.io/blog/bazel-builds/).
+
+## References
+
+* [Bazel Blog article on sync][1]
+
+[1]: https://blog.bazel.build/2018/07/09/bazel-sync-and-resolved-file.html
