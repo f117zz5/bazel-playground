@@ -18,5 +18,6 @@ py_binary(
         requirement("requests"),
         requirement("tomli"),
         requirement("urllib3"),
+        requirement("svgwrite"),
         ],
 )
