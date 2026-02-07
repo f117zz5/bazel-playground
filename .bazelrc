@@ -12,3 +12,7 @@ build:gcc12 --extra_toolchains=//toolchain:gcc_toolchain
 
 # Build with GCC 10.3 (stable-2021.11-5, glibc 2.34, Ubuntu 20.04-like)
 build:gcc10 --extra_toolchains=//toolchain:gcc10_toolchain
+
+# Clang Toolchain Configuration
+# Build with Clang 17.0.6 (via toolchains_llvm)
+build:clang17 --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
