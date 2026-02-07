@@ -17,19 +17,18 @@ module(
 bazel_dep(name = "hermetic_toolchains", version = "1.0.0")
 
 # --- Step 2: Application dependencies ---
-# Only add what YOUR project needs.  Toolchain deps (bazel_skylib,
-# rules_python, toolchains_llvm, etc.) are pulled in transitively.
-# Note: rules_python is needed for pip extension access.
-# It will emit a harmless warning about Python 3.11 toolchain conflicts
-# (hermetic_toolchains' registration takes precedence).
+# rules_python is needed to access the pip extension.
+# toolchains_llvm is needed because its extension is root-module only.
+# These are also deps of hermetic_toolchains; Bazel will resolve to a single
+# version (MVS - Minimal Version Selection picks the highest requested).
 bazel_dep(name = "rules_python", version = "0.33.2")
+bazel_dep(name = "toolchains_llvm", version = "1.2.0")
 bazel_dep(name = "rules_cc", version = "0.2.8")
 
 # --- Step 3: Set up Clang 17 (must be done by root module) ---
 # GCC 12/10 and Python are registered automatically by hermetic_toolchains.
 # Clang requires root-module setup because toolchains_llvm restricts its
 # extension to the root module only.
-bazel_dep(name = "toolchains_llvm", version = "1.2.0")
 
 # The sysroot archive — same Bootlin GCC 10.3 used by hermetic_toolchains.
 # This MUST be declared here because http_archive repos from dependencies
