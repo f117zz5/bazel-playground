@@ -1,0 +1,18 @@
+# Example consumer workspace — Bazel configuration
+#
+# Toolchains are provided by hermetic_toolchains; select them here.
+
+common --enable_bzlmod
+
+# Force C++17
+build --cxxopt=-std=c++17
+
+# --- Select a C/C++ toolchain ---
+# GCC 12.3 (fully hermetic, glibc 2.39)
+build:gcc12 --extra_toolchains=@hermetic_toolchains//toolchain:gcc_toolchain
+
+# GCC 10.3 (fully hermetic, glibc 2.34)
+build:gcc10 --extra_toolchains=@hermetic_toolchains//toolchain:gcc10_toolchain
+
+# Clang 17 (sandbox-hermetic, static libc++)
+build:clang17 --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux

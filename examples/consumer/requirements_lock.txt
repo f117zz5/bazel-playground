@@ -1,0 +1,2 @@
+# Minimal requirements for the example consumer.
+# Empty for hello-world; add your pip packages here.

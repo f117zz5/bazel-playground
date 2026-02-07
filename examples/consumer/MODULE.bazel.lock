@@ -14,6 +14,7 @@
     "https://bcr.bazel.build/modules/apple_support/1.5.0/MODULE.bazel": "50341a62efbc483e8a2a6aec30994a58749bd7b885e18dd96aa8c33031e558ef",
     "https://bcr.bazel.build/modules/bazel_features/1.1.1/MODULE.bazel": "27b8c79ef57efe08efccbd9dd6ef70d61b4798320b8d3c134fd571f78963dbcd",
     "https://bcr.bazel.build/modules/bazel_features/1.11.0/MODULE.bazel": "f9382337dd5a474c3b7d334c2f83e50b6eaedc284253334cf823044a26de03e8",
+    "https://bcr.bazel.build/modules/bazel_features/1.19.0/MODULE.bazel": "59adcdf28230d220f0067b1f435b8537dd033bfff8db21335ef9217919c7fb58",
     "https://bcr.bazel.build/modules/bazel_features/1.28.0/MODULE.bazel": "4b4200e6cbf8fa335b2c3f43e1d6ef3e240319c33d43d60cc0fbd4b87ece299d",
     "https://bcr.bazel.build/modules/bazel_features/1.28.0/source.json": "16a3fc5b4483cb307643791f5a4b7365fa98d2e70da7c378cdbde55f0c0b32cf",
     "https://bcr.bazel.build/modules/bazel_features/1.9.1/MODULE.bazel": "8f679097876a9b609ad1f60249c49d68bfab783dd9be012faf9d82547b14815a",
@@ -78,6 +79,7 @@
     "https://bcr.bazel.build/modules/rules_cc/0.0.6/MODULE.bazel": "abf360251023dfe3efcef65ab9d56beefa8394d4176dd29529750e1c57eaa33f",
     "https://bcr.bazel.build/modules/rules_cc/0.0.8/MODULE.bazel": "964c85c82cfeb6f3855e6a07054fdb159aced38e99a5eecf7bce9d53990afa3e",
     "https://bcr.bazel.build/modules/rules_cc/0.0.9/MODULE.bazel": "836e76439f354b89afe6a911a7adf59a6b2518fafb174483ad78a2a2fde7b1c5",
+    "https://bcr.bazel.build/modules/rules_cc/0.1.0/MODULE.bazel": "2fef03775b9ba995ec543868840041cc69e8bc705eb0cb6604a36eee18c87d8b",
     "https://bcr.bazel.build/modules/rules_cc/0.2.8/MODULE.bazel": "f1df20f0bf22c28192a794f29b501ee2018fa37a3862a1a2132ae2940a23a642",
     "https://bcr.bazel.build/modules/rules_cc/0.2.8/source.json": "85087982aca15f31307bd52698316b28faa31bd2c3095a41f456afec0131344c",
     "https://bcr.bazel.build/modules/rules_foreign_cc/0.9.0/MODULE.bazel": "c9e8c682bf75b0e7c704166d79b599f93b72cfca5ad7477df596947891feeef6",
@@ -150,6 +152,103 @@
             "apple_support~",
             "bazel_tools",
             "bazel_tools"
+          ]
+        ]
+      }
+    },
+    "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
+      "general": {
+        "bzlTransitiveDigest": "dZkcElkfice3BvKPXtFwrvPABm8ac+SwfynSinwK4dQ=",
+        "usagesDigest": "eZBj01ywVHlf0iJt0j+3ZDCEFr7Jy6uxbBZUzKo9WZc=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "llvm_toolchain_llvm": {
+            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
+            "ruleClassName": "llvm",
+            "attributes": {
+              "alternative_llvm_sources": [],
+              "auth_patterns": {},
+              "distribution": "auto",
+              "exec_arch": "",
+              "exec_os": "",
+              "llvm_mirror": "",
+              "llvm_version": "17.0.6",
+              "llvm_versions": {},
+              "netrc": "",
+              "sha256": {},
+              "strip_prefix": {},
+              "urls": {}
+            }
+          },
+          "llvm_toolchain": {
+            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
+            "ruleClassName": "toolchain",
+            "attributes": {
+              "absolute_paths": false,
+              "archive_flags": {},
+              "compile_flags": {},
+              "coverage_compile_flags": {},
+              "coverage_link_flags": {},
+              "cxx_builtin_include_directories": {},
+              "cxx_flags": {},
+              "cxx_standard": {},
+              "dbg_compile_flags": {},
+              "exec_arch": "",
+              "exec_os": "",
+              "extra_exec_compatible_with": {},
+              "extra_target_compatible_with": {},
+              "link_flags": {
+                "linux-x86_64": [
+                  "--target=x86_64-unknown-linux-gnu",
+                  "-lm",
+                  "-no-canonical-prefixes",
+                  "-fuse-ld=lld",
+                  "-Wl,--build-id=md5",
+                  "-Wl,--hash-style=gnu",
+                  "-Wl,-z,relro,-z,now",
+                  "-l:libc++.a",
+                  "-l:libc++abi.a",
+                  "-Wl,--dynamic-linker=external/_main~_repo_rules~clang_sysroot/lib/ld-linux-x86-64.so.2",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/usr/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib64"
+                ]
+              },
+              "link_libs": {},
+              "llvm_versions": {
+                "": "17.0.6"
+              },
+              "opt_compile_flags": {},
+              "opt_link_flags": {},
+              "stdlib": {
+                "linux-x86_64": "builtin-libc++"
+              },
+              "target_settings": {},
+              "unfiltered_compile_flags": {},
+              "toolchain_roots": {},
+              "sysroot": {
+                "linux-x86_64": "'@@_main~_repo_rules~clang_sysroot//:sysroot_files'"
+              }
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "toolchains_llvm~",
+            "bazel_skylib",
+            "bazel_skylib~"
+          ],
+          [
+            "toolchains_llvm~",
+            "bazel_tools",
+            "bazel_tools"
+          ],
+          [
+            "toolchains_llvm~",
+            "toolchains_llvm",
+            "toolchains_llvm~"
           ]
         ]
       }

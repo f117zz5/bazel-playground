@@ -1,21 +1,45 @@
 """
-Bazel module definition for py_youtube
+hermetic_toolchains — reusable Bzlmod module providing hermetic C/C++ and Python toolchains.
 
-Uses Bzlmod for dependency management instead of WORKSPACE.
+Provides:
+  - GCC 12.3  (Bootlin stable-2024.02-1, glibc 2.39, fully hermetic)
+  - GCC 10.3  (Bootlin stable-2021.11-5, glibc 2.34, fully hermetic)
+  - Clang 17  (LLVM 17.0.6, static libc++, sysroot-hermetic)
+  - Python 3.11  (bundled with GCC 12 Bootlin toolchain, hermetic interpreter)
+
+Consumer workspaces add:
+    bazel_dep(name = "hermetic_toolchains", version = "1.0.0")
+and select toolchains via --extra_toolchains in .bazelrc.
+
+GCC and Python toolchains are registered automatically.
+Clang 17 requires consumer-side setup because toolchains_llvm restricts
+its extension to the root module only.  See toolchain/clang.bzl.
+
+Python pip packages are NOT provided — each consumer manages its own.
 """
 
-bazel_dep(name = "rules_python", version = "0.24.0")
+module(
+    name = "hermetic_toolchains",
+    version = "1.0.0",
+    compatibility_level = 1,
+)
+
+# ===== Core dependencies =====
 bazel_dep(name = "bazel_skylib", version = "1.6.1")
+bazel_dep(name = "rules_python", version = "0.24.0")
+bazel_dep(name = "toolchains_llvm", version = "1.2.0")
+bazel_dep(name = "platforms", version = "0.0.10")
+
+# ===== Application dependencies (used by src/ targets in this repo only) =====
 bazel_dep(name = "googletest", version = "1.15.2")
 bazel_dep(name = "nlohmann_json", version = "3.11.3")
 bazel_dep(name = "cpr", version = "1.12.0")
 bazel_dep(name = "yaml-cpp", version = "0.8.0")
-bazel_dep(name = "toolchains_llvm", version = "1.2.0")
 
-# Define the GCC toolchain repository
+# ===== GCC toolchain archives =====
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# --- GCC 12.3 toolchain (Bootlin stable-2024.02-1) ---
+# --- GCC 12.3 (Bootlin stable-2024.02-1, glibc 2.39) ---
 http_archive(
     name = "gcc_toolchain",
     build_file = "//toolchain:BUILD.gcc",
@@ -26,7 +50,7 @@ http_archive(
     patch_args = ["-p0"],
 )
 
-# --- GCC 10.3 toolchain (Bootlin stable-2021.11-5, closest to GCC 9, glibc 2.34) ---
+# --- GCC 10.3 (Bootlin stable-2021.11-5, glibc 2.34) ---
 http_archive(
     name = "gcc10_toolchain",
     build_file = "//toolchain:BUILD.gcc10",
@@ -37,7 +61,7 @@ http_archive(
     patch_args = ["-p0"],
 )
 
-# --- Clang sysroot (Bootlin sysroot from stable-2021.11-5, glibc 2.34) ---
+# --- Clang sysroot (glibc 2.34 from Bootlin stable-2021.11-5) ---
 http_archive(
     name = "clang_sysroot",
     build_file = "//toolchain:BUILD.clang_sysroot",
@@ -46,58 +70,40 @@ http_archive(
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
 )
 
-# Resolve the absolute path of the gcc_toolchain repos at fetch time.
-# This is required because GCC resolves built-in include paths to absolute
-# filesystem paths, and cxx_builtin_include_directories must match exactly.
+# ===== Resolve GCC absolute paths at fetch time =====
 gcc_toolchain_config = use_repo_rule("//toolchain:gcc_toolchain_config.bzl", "gcc_toolchain_config")
 gcc_toolchain_config(name = "gcc_toolchain_config", gcc_repo_name = "gcc_toolchain")
 gcc_toolchain_config(name = "gcc10_toolchain_config", gcc_repo_name = "gcc10_toolchain")
 
+# ===== Register GCC toolchains (work transitively for consumers) =====
 register_toolchains("//toolchain:gcc_toolchain")
 register_toolchains("//toolchain:gcc10_toolchain")
 
-# --- Clang 17 toolchain (via toolchains_llvm) ---
-# Configured with builtin-libc++ for hermetic C++ standard library and sysroot
-llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
-llvm.toolchain(
-    name = "llvm_toolchain",
-    llvm_version = "17.0.6",
-    stdlib = {
-        "linux-x86_64": "builtin-libc++",
-    },
-    link_flags = {
-        "linux-x86_64": [
-            "--target=x86_64-unknown-linux-gnu",
-            "-lm",
-            "-no-canonical-prefixes",
-            "-fuse-ld=lld",
-            "-Wl,--build-id=md5",
-            "-Wl,--hash-style=gnu",
-            "-Wl,-z,relro,-z,now",
-            "-l:libc++.a",
-            "-l:libc++abi.a",
-            "-Wl,--dynamic-linker=external/_main~_repo_rules~clang_sysroot/lib/ld-linux-x86-64.so.2",
-            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib",
-            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/usr/lib",
-            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib64",
-        ],
-    },
-)
-llvm.sysroot(
-    name = "llvm_toolchain",
-    targets = ["linux-x86_64"],
-    label = "@clang_sysroot//:sysroot_files",
-)
-use_repo(llvm, "llvm_toolchain")
-register_toolchains("@llvm_toolchain//:all")
+# ===== Clang 17 (LLVM 17.0.6) =====
+# NOTE: toolchains_llvm restricts its extension to the root module only.
+# This means the llvm extension CANNOT be used here — if this module is
+# consumed as a dependency, the extension call would fail with:
+#   "Only the root module can use the 'llvm' extension"
+#
+# Therefore Clang setup is NOT included in this MODULE.bazel.
+# Instead:
+#   - When using this repo standalone: configure Clang via .bazelrc
+#     pointing to the consumer example pattern below.
+#   - When consuming this module as a dependency: set up Clang in YOUR
+#     MODULE.bazel.  See examples/consumer/MODULE.bazel and
+#     docs/integration_guide.md for the exact code to copy.
+#
+# The clang_sysroot http_archive above IS still provided because it's
+# just a plain repo rule (not a module extension) and is needed by the
+# llvm.sysroot() call that the consumer makes.
 
-# Configure Python
+# ===== Python 3.11 toolchain (interpreter only) =====
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     python_version = "3.11",
 )
 
-# Configure pip
+# ===== Pip packages (local to this workspace, NOT exported to consumers) =====
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "my_pip_install",
