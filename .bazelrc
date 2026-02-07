@@ -2,3 +2,6 @@
 
 # Enable bzlmod - use MODULE.bazel for dependency management
 common --enable_bzlmod
+
+# Force C++17 for cpr
+build --cxxopt=-std=c++17
