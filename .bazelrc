@@ -5,3 +5,10 @@ common --enable_bzlmod
 
 # Force C++17 for cpr
 build --cxxopt=-std=c++17
+
+# GCC Toolchain Configurations
+# Build with GCC 12.3 (default: stable-2024.02-1, glibc 2.39)
+build:gcc12 --extra_toolchains=//toolchain:gcc_toolchain
+
+# Build with GCC 10.3 (stable-2021.11-5, glibc 2.34, Ubuntu 20.04-like)
+build:gcc10 --extra_toolchains=//toolchain:gcc10_toolchain

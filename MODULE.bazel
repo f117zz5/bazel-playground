@@ -14,6 +14,7 @@ bazel_dep(name = "yaml-cpp", version = "0.8.0")
 # Define the GCC toolchain repository
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# --- GCC 12.3 toolchain (Bootlin stable-2024.02-1) ---
 http_archive(
     name = "gcc_toolchain",
     build_file = "//toolchain:BUILD.gcc",
@@ -24,13 +25,26 @@ http_archive(
     patch_args = ["-p1"],
 )
 
-# Resolve the absolute path of the gcc_toolchain repo at fetch time.
+# --- GCC 10.3 toolchain (Bootlin stable-2021.11-5, closest to GCC 9, glibc 2.34) ---
+http_archive(
+    name = "gcc10_toolchain",
+    build_file = "//toolchain:BUILD.gcc10",
+    sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
+    strip_prefix = "x86-64--glibc--stable-2021.11-5",
+    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+    patches = ["//toolchain:inject_config.patch"],
+    patch_args = ["-p1"],
+)
+
+# Resolve the absolute path of the gcc_toolchain repos at fetch time.
 # This is required because GCC resolves built-in include paths to absolute
 # filesystem paths, and cxx_builtin_include_directories must match exactly.
 gcc_toolchain_config = use_repo_rule("//toolchain:gcc_toolchain_config.bzl", "gcc_toolchain_config")
-gcc_toolchain_config(name = "gcc_toolchain_config")
+gcc_toolchain_config(name = "gcc_toolchain_config", gcc_repo_name = "gcc_toolchain")
+gcc_toolchain_config(name = "gcc10_toolchain_config", gcc_repo_name = "gcc10_toolchain")
 
 register_toolchains("//toolchain:gcc_toolchain")
+register_toolchains("//toolchain:gcc10_toolchain")
 
 # Configure Python
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")

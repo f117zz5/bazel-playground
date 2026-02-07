@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load(":cc_toolchain_config.bzl", "cc_toolchain_config")
-load("@gcc_toolchain_config//:defs.bzl", "GCC_TOOLCHAIN_ABSOLUTE_PATH")
+load("@gcc10_toolchain_config//:defs.bzl", "GCC_TOOLCHAIN_ABSOLUTE_PATH")
 
 filegroup(
     name = "all_files",
@@ -56,9 +56,9 @@ filegroup(
 cc_toolchain_config(
     name = "k8_toolchain_config",
     toolchain_path_prefix = GCC_TOOLCHAIN_ABSOLUTE_PATH,
-    gcc_version = "12.3.0",
+    gcc_version = "10.3.0",
     binary_prefix = "x86_64-buildroot-linux-gnu-",
-    toolchain_identifier = "x86_64-gcc12-toolchain",
+    toolchain_identifier = "x86_64-gcc10-toolchain",
 )
 
 filegroup(
@@ -78,5 +78,5 @@ cc_toolchain(
     strip_files = ":strip_files",
     supports_param_files = 0,
     toolchain_config = ":k8_toolchain_config",
-    toolchain_identifier = "k8-toolchain",
+    toolchain_identifier = "k8-gcc10-toolchain",
 )

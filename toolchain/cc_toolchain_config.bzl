@@ -17,7 +17,11 @@ _ALL_LINK_ACTIONS = [
 ]
 
 def _impl(ctx):
-    toolchain_identifier = "x86_64-toolchain"
+    toolchain_path_prefix = ctx.attr.toolchain_path_prefix
+    gcc_version = ctx.attr.gcc_version
+    binary_prefix = ctx.attr.binary_prefix
+    toolchain_identifier = ctx.attr.toolchain_identifier
+
     host_system_name = "local"
     target_system_name = "local"
     target_cpu = "k8"
@@ -27,7 +31,7 @@ def _impl(ctx):
     abi_libc_version = "unknown"
 
     # Prefix for the binaries in the downloaded tarball
-    prefix = "bin/x86_64-buildroot-linux-gnu-"
+    prefix = "bin/" + binary_prefix
 
     tool_paths = [
         tool_path(name = "gcc", path = prefix + "gcc"),
@@ -40,14 +44,10 @@ def _impl(ctx):
         tool_path(name = "strip", path = prefix + "strip"),
     ]
 
-    # The sysroot inside the downloaded toolchain tarball
-    sysroot_subdir = "x86_64-buildroot-linux-gnu/sysroot"
-
-    # The absolute path prefix for the toolchain repository, resolved at
-    # repository-fetch time by the gcc_toolchain_config repository rule.
-    # GCC resolves its built-in include paths to absolute filesystem paths,
-    # so cxx_builtin_include_directories must also use absolute paths.
-    toolchain_path_prefix = ctx.attr.toolchain_path_prefix
+    # The sysroot inside the downloaded toolchain tarball.
+    # Derive the target triple from the binary_prefix (strip trailing dash).
+    target_triple = binary_prefix.rstrip("-")
+    sysroot_subdir = target_triple + "/sysroot"
 
     # Sysroot: use the absolute path for both compiler flags and builtin_sysroot.
     # This ensures consistency when GCC resolves paths.
@@ -59,10 +59,10 @@ def _impl(ctx):
     bin_dir = toolchain_path_prefix + "/bin"
 
     # The libexec directory contains collect2/lto-wrapper; -B also helps there.
-    libexec_gcc_dir = toolchain_path_prefix + "/libexec/gcc/x86_64-buildroot-linux-gnu/12.3.0"
+    libexec_gcc_dir = toolchain_path_prefix + "/libexec/gcc/" + target_triple + "/" + gcc_version
 
     # The cross-tools directory (contains the prefixed ld that collect2 needs)
-    cross_bin_dir = toolchain_path_prefix + "/x86_64-buildroot-linux-gnu/bin"
+    cross_bin_dir = toolchain_path_prefix + "/" + target_triple + "/bin"
 
     # Built-in include directories — MUST use absolute paths to match what
     # GCC reports during compilation. GCC always resolves its own built-in
@@ -70,12 +70,12 @@ def _impl(ctx):
     # (that flag only affects paths derived from the input file, not built-in dirs).
     cxx_builtin_include_directories = [
         toolchain_path_prefix + "/" + sysroot_subdir + "/usr/include",
-        toolchain_path_prefix + "/include/c++/12.3.0",
-        toolchain_path_prefix + "/include/c++/12.3.0/x86_64-buildroot-linux-gnu",
-        toolchain_path_prefix + "/lib/gcc/x86_64-buildroot-linux-gnu/12.3.0/include",
-        toolchain_path_prefix + "/lib/gcc/x86_64-buildroot-linux-gnu/12.3.0/include-fixed",
-        toolchain_path_prefix + "/x86_64-buildroot-linux-gnu/include/c++/12.3.0",
-        toolchain_path_prefix + "/x86_64-buildroot-linux-gnu/include/c++/12.3.0/x86_64-buildroot-linux-gnu",
+        toolchain_path_prefix + "/include/c++/" + gcc_version,
+        toolchain_path_prefix + "/include/c++/" + gcc_version + "/" + target_triple,
+        toolchain_path_prefix + "/lib/gcc/" + target_triple + "/" + gcc_version + "/include",
+        toolchain_path_prefix + "/lib/gcc/" + target_triple + "/" + gcc_version + "/include-fixed",
+        toolchain_path_prefix + "/" + target_triple + "/include/c++/" + gcc_version,
+        toolchain_path_prefix + "/" + target_triple + "/include/c++/" + gcc_version + "/" + target_triple,
     ]
 
     features = [
@@ -141,6 +141,9 @@ cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
         "toolchain_path_prefix": attr.string(mandatory = True),
+        "gcc_version": attr.string(mandatory = True),
+        "binary_prefix": attr.string(mandatory = True),
+        "toolchain_identifier": attr.string(default = "x86_64-toolchain"),
     },
     provides = [CcToolchainConfigInfo],
 )

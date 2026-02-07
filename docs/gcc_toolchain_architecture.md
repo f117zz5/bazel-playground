@@ -11,14 +11,28 @@
 - [File-by-File Reference](#file-by-file-reference)
 - [Bugs, Root Causes, and Best Practices](#bugs-root-causes-and-best-practices)
 - [Future: Separating the Toolchain into a Common Repository](#future-separating-the-toolchain-into-a-common-repository)
+- [Quick Reference: Building with the Toolchain](#quick-reference-building-with-the-toolchain)
+- [Appendix: Building a Custom GCC 9 Tarball](#appendix-building-a-custom-gcc-9-tarball)
 
 ---
 
 ## Overview
 
-This project integrates a **hermetic GCC 12.3 cross-toolchain** (Bootlin x86_64-glibc) into
-Bazel via Bzlmod. "Hermetic" means the toolchain is downloaded as a tarball and used
+This project integrates **two hermetic GCC cross-toolchains** (Bootlin x86_64-glibc) into
+Bazel via Bzlmod. "Hermetic" means each toolchain is downloaded as a tarball and used
 in isolation — no system compiler is involved.
+
+| Toolchain | GCC Version | glibc | Bootlin Release | Use Case |
+|---|---|---|---|---|
+| `gcc_toolchain` (default) | 12.3.0 | 2.39 | stable-2024.02-1 | Modern C++17/20 development |
+| `gcc10_toolchain` | 10.3.0 | 2.34 | stable-2021.11-5 | Closer to Ubuntu 20.04 (GCC 9.4) |
+
+> **Note on Ubuntu 20.04 compatibility:** Ubuntu 20.04 ships GCC 9.4 with glibc 2.31.
+> No pre-built hermetic GCC 9 tarball exists publicly. Bootlin's oldest stable toolchain
+> is `2021.11-5` with GCC 10.3 and glibc 2.34. This is the closest available option.
+> For exact GCC 9 + glibc 2.31, you would need to build a custom tarball via
+> [crosstool-ng](https://crosstool-ng.github.io/) or extract packages from Ubuntu 20.04 apt
+> (see [Appendix: Building a Custom GCC 9 Tarball](#appendix-building-a-custom-gcc-9-tarball)).
 
 The integration is split into **three architectural layers**:
 
@@ -166,39 +180,47 @@ The patch uses `diff -Naur` format to create a brand new file (`/dev/null` → `
 ## Data Flow Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           MODULE.bazel                                  │
-│                                                                         │
-│  ┌──────────────┐    ┌──────────────────────┐    ┌───────────────────┐  │
-│  │ http_archive │    │ gcc_toolchain_config  │    │register_toolchains│  │
-│  │ (fetch GCC)  │    │ (repository_rule)     │    │                   │  │
-│  └──────┬───────┘    └──────────┬───────────┘    └────────┬──────────┘  │
-└─────────┼───────────────────────┼─────────────────────────┼─────────────┘
-          │                       │                         │
-          ▼                       ▼                         ▼
-┌──────────────────┐  ┌────────────────────┐   ┌───────────────────────┐
-│ @gcc_toolchain   │  │@gcc_toolchain_config│   │  //toolchain:BUILD   │
-│ (external repo)  │  │ (external repo)     │   │  toolchain() rule    │
-│                  │  │                     │   │  ┌─────────────────┐ │
-│ ┌──────────────┐ │  │ defs.bzl:           │   │  │ gcc_toolchain   │ │
-│ │ BUILD.gcc    │◄├──┤ GCC_TOOLCHAIN_      │   │  │ exec: x86_64   │ │
-│ │              │ │  │ ABSOLUTE_PATH       │   │  │ target: x86_64 │ │
-│ │ loads        │ │  │ = "/home/.../.cache │   │  │ ──────────►    │ │
-│ │ ┌──────────┐ │ │  │   /bazel/.../       │   │  │ @gcc_toolchain │ │
-│ │ │config.bzl│ │ │  │   gcc_toolchain"    │   │  │ //:k8_toolchain│ │
-│ │ │(patched) │ │ │  │                     │   │  └─────────────────┘ │
-│ │ └──────────┘ │ │  └─────────────────────┘   └───────────────────────┘
-│ │              │ │
-│ │ cc_toolchain │ │          ┌──────────────────────────┐
-│ │ k8_toolchain │ │◄─────── │ inject_config.patch       │
-│ │              │ │          │ adds cc_toolchain_config  │
-│ │ filegroups   │ │          │ .bzl into the tarball     │
-│ └──────────────┘ │          └──────────────────────────┘
-│                  │
-│ bin/x86_64-...-gcc│
-│ lib/gcc/...       │
-│ sysroot/...       │
-└──────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              MODULE.bazel                                    │
+│                                                                              │
+│  ┌────────────────────┐  ┌────────────────────────┐  ┌────────────────────┐  │
+│  │ http_archive ×2    │  │ gcc_toolchain_config ×2 │  │register_toolchains│  │
+│  │ • gcc_toolchain    │  │ • gcc_toolchain_config  │  │ • //toolchain:     │  │
+│  │   (GCC 12.3)       │  │   (gcc_repo=gcc_tc)     │  │   gcc_toolchain   │  │
+│  │ • gcc10_toolchain  │  │ • gcc10_toolchain_config│  │ • //toolchain:     │  │
+│  │   (GCC 10.3)       │  │   (gcc_repo=gcc10_tc)   │  │   gcc10_toolchain │  │
+│  └────────┬───────────┘  └───────────┬────────────┘  └─────────┬──────────┘  │
+└───────────┼──────────────────────────┼─────────────────────────┼─────────────┘
+            │                          │                         │
+            ▼                          ▼                         ▼
+┌───────────────────────┐  ┌────────────────────┐   ┌───────────────────────┐
+│ @gcc_toolchain  (12.3)│  │@gcc_toolchain_config│  │  //toolchain:BUILD   │
+│ @gcc10_toolchain(10.3)│  │@gcc10_toolchain_conf│  │                      │
+│ (external repos)      │  │ (external repos)    │  │  ┌─────────────────┐ │
+│                       │  │                     │  │  │ gcc_toolchain   │ │
+│ ┌───────────────────┐ │  │ defs.bzl:           │  │  │ (GCC 12.3)     │ │
+│ │ BUILD.gcc /       │◄├──┤ GCC_TOOLCHAIN_      │  │  ├─────────────────┤ │
+│ │ BUILD.gcc10       │ │  │ ABSOLUTE_PATH       │  │  │ gcc10_toolchain │ │
+│ │ (overlay)         │ │  │ = "/home/.../.cache │  │  │ (GCC 10.3)     │ │
+│ │                   │ │  │   /bazel/.../..."   │  │  └─────────────────┘ │
+│ │ loads ──────────┐ │ │  └─────────────────────┘  └───────────────────────┘
+│ │ ┌───────────────┤ │ │
+│ │ │ config.bzl    │ │ │          ┌──────────────────────────┐
+│ │ │ (patched,     │ │ │◄─────── │ inject_config.patch       │
+│ │ │  parameterized│ │ │          │ shared by both tarballs   │
+│ │ │  gcc_version, │ │ │          │ adds parameterized        │
+│ │ │  binary_prefix│ │ │          │ cc_toolchain_config.bzl   │
+│ │ └───────────────┘ │ │          └──────────────────────────┘
+│ │                   │ │
+│ │ cc_toolchain      │ │
+│ │ k8_toolchain      │ │
+│ │ filegroups        │ │
+│ └───────────────────┘ │
+│                       │
+│ bin/x86_64-...-gcc    │
+│ lib/gcc/...           │
+│ sysroot/...           │
+└───────────────────────┘
 ```
 
 ---
@@ -207,12 +229,13 @@ The patch uses `diff -Naur` format to create a brand new file (`/dev/null` → `
 
 | File | Layer | Role |
 |---|---|---|
-| `MODULE.bazel` | Integration | Declares `http_archive`, `gcc_toolchain_config` repo rule, and `register_toolchains` |
-| `toolchain/BUILD` | Integration | Declares the `toolchain()` bridge rule with platform constraints |
-| `toolchain/gcc_toolchain_config.bzl` | Configuration | Repository rule that resolves absolute path at fetch time |
-| `toolchain/BUILD.gcc` | Configuration | Overlaid BUILD for `@gcc_toolchain`: filegroups + `cc_toolchain` + `cc_toolchain_config` instantiation |
-| `toolchain/cc_toolchain_config.bzl` | Configuration + Patching | The actual compiler config (tool paths, sysroot, flags, include dirs). Injected via patch. |
-| `toolchain/inject_config.patch` | Patching | Patch that creates `cc_toolchain_config.bzl` inside the downloaded tarball |
+| `MODULE.bazel` | Integration | Declares `http_archive` for both GCC 12.3 and GCC 10.3, their `gcc_toolchain_config` repo rules, and `register_toolchains` |
+| `toolchain/BUILD` | Integration | Declares `toolchain()` bridge rules (`gcc_toolchain`, `gcc10_toolchain`) with platform constraints |
+| `toolchain/gcc_toolchain_config.bzl` | Configuration | Parameterized `repository_rule` that resolves absolute path at fetch time; accepts `gcc_repo_name` attr |
+| `toolchain/BUILD.gcc` | Configuration | Overlaid BUILD for `@gcc_toolchain` (GCC 12.3): filegroups + `cc_toolchain` + `cc_toolchain_config` instantiation |
+| `toolchain/BUILD.gcc10` | Configuration | Overlaid BUILD for `@gcc10_toolchain` (GCC 10.3): same structure as `BUILD.gcc` with GCC 10 parameters |
+| `toolchain/cc_toolchain_config.bzl` | Configuration + Patching | Parameterized compiler config (tool paths, sysroot, flags, include dirs). Accepts `gcc_version`, `binary_prefix`, `toolchain_identifier`. Injected via patch. |
+| `toolchain/inject_config.patch` | Patching | Shared patch that creates `cc_toolchain_config.bzl` inside both downloaded tarballs |
 
 ---
 
@@ -349,6 +372,12 @@ Decouple the toolchain **implementation** (reusable across all projects) from th
 - Multiple consuming repositories that share the same GCC integration.
 - Independent versioning of toolchain vs. application code.
 
+> **Note:** The current dual-toolchain design (GCC 12.3 + GCC 10.3) already demonstrates
+> the parameterized pattern needed for this separation. The `cc_toolchain_config.bzl` rule
+> accepts `gcc_version`, `binary_prefix`, and `toolchain_identifier` as attributes, and
+> `gcc_toolchain_config.bzl` accepts `gcc_repo_name` — making both fully reusable. The
+> migration to a separate repository is primarily a packaging concern at this point.
+
 ### Proposed Repository Structure
 
 ```
@@ -412,6 +441,13 @@ _TOOLCHAINS = {
         strip_prefix = "x86-64--glibc--stable-2024.02-1",
         prefix = "x86_64-buildroot-linux-gnu",
         gcc_version = "12.3.0",
+    ),
+    "10.3-x86_64": struct(
+        url = "https://toolchains.bootlin.com/.../x86-64--glibc--stable-2021.11-5.tar.bz2",
+        sha256 = "6fe812ad...",
+        strip_prefix = "x86-64--glibc--stable-2021.11-5",
+        prefix = "x86_64-buildroot-linux-gnu",
+        gcc_version = "10.3.0",
     ),
     # Future: add more versions/architectures here
     # "13.2-aarch64": struct(...),
@@ -521,10 +557,14 @@ That's it. No toolchain files, no patches, no Starlark rules in the consumer.
 ## Quick Reference: Building with the Toolchain
 
 ```bash
-# Build a C++ target (toolchain is auto-selected via register_toolchains)
+# Build with the default toolchain (GCC 12.3, first registered wins)
 bazel build //src/cpp:github_checker
 
-# Explicitly select the toolchain (useful for debugging)
+# Build with GCC 10.3 toolchain explicitly
+bazel build //src/cpp:github_checker \
+  --extra_toolchains=//toolchain:gcc10_toolchain
+
+# Build with GCC 12.3 toolchain explicitly
 bazel build //src/cpp:github_checker \
   --extra_toolchains=//toolchain:gcc_toolchain
 
@@ -536,3 +576,46 @@ bazel cquery --output=starlark \
 # Debug include path issues
 bazel build //src/cpp:github_checker --sandbox_debug -s 2>&1 | grep -E '(-I|-isystem|sysroot)'
 ```
+
+---
+
+## Appendix: Building a Custom GCC 9 Tarball
+
+For exact Ubuntu 20.04 compatibility (GCC 9.4 + glibc 2.31), no pre-built hermetic
+tarball exists. Here are two approaches to create one:
+
+### Option A: crosstool-ng (Recommended)
+
+[crosstool-ng](https://crosstool-ng.github.io/) can build a complete self-contained
+GCC toolchain from source:
+
+```bash
+# Install crosstool-ng
+sudo apt install crosstool-ng
+
+# Create a config for x86_64, GCC 9.4, glibc 2.31
+ct-ng x86_64-unknown-linux-gnu
+ct-ng menuconfig
+# Set: GCC version = 9.4.0, glibc version = 2.31, Linux headers = 5.4
+ct-ng build
+
+# Package the result
+tar cJf gcc-9.4.0-x86_64-glibc-2.31.tar.xz -C ~/x-tools x86_64-unknown-linux-gnu/
+```
+
+Then host the tarball (e.g., on a GitHub release or internal artifact server) and
+reference it in `MODULE.bazel` with the matching `sha256`.
+
+### Option B: Extract from Ubuntu 20.04 apt packages
+
+```bash
+# In an Ubuntu 20.04 container/chroot
+mkdir -p /tmp/gcc9-sysroot && cd /tmp/gcc9-sysroot
+apt download gcc-9 g++-9 cpp-9 libgcc-9-dev libstdc++-9-dev \
+  binutils libc6-dev linux-libc-dev
+for deb in *.deb; do dpkg -x "$deb" .; done
+# Restructure into a standard toolchain layout and tar it up
+```
+
+This is more fragile because Ubuntu packages assume system paths, requiring
+symlink fixups. The crosstool-ng approach produces a cleaner, self-contained result.
