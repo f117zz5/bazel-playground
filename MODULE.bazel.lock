@@ -153,6 +153,103 @@
           ]
         ]
       }
+    },
+    "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
+      "general": {
+        "bzlTransitiveDigest": "dZkcElkfice3BvKPXtFwrvPABm8ac+SwfynSinwK4dQ=",
+        "usagesDigest": "0Ej+jfY0m/h/FvLXaiV6JqEr46x8Eb1YTu51JFpG1XA=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "llvm_toolchain_llvm": {
+            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
+            "ruleClassName": "llvm",
+            "attributes": {
+              "alternative_llvm_sources": [],
+              "auth_patterns": {},
+              "distribution": "auto",
+              "exec_arch": "",
+              "exec_os": "",
+              "llvm_mirror": "",
+              "llvm_version": "17.0.6",
+              "llvm_versions": {},
+              "netrc": "",
+              "sha256": {},
+              "strip_prefix": {},
+              "urls": {}
+            }
+          },
+          "llvm_toolchain": {
+            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
+            "ruleClassName": "toolchain",
+            "attributes": {
+              "absolute_paths": false,
+              "archive_flags": {},
+              "compile_flags": {},
+              "coverage_compile_flags": {},
+              "coverage_link_flags": {},
+              "cxx_builtin_include_directories": {},
+              "cxx_flags": {},
+              "cxx_standard": {},
+              "dbg_compile_flags": {},
+              "exec_arch": "",
+              "exec_os": "",
+              "extra_exec_compatible_with": {},
+              "extra_target_compatible_with": {},
+              "link_flags": {
+                "linux-x86_64": [
+                  "--target=x86_64-unknown-linux-gnu",
+                  "-lm",
+                  "-no-canonical-prefixes",
+                  "-fuse-ld=lld",
+                  "-Wl,--build-id=md5",
+                  "-Wl,--hash-style=gnu",
+                  "-Wl,-z,relro,-z,now",
+                  "-l:libc++.a",
+                  "-l:libc++abi.a",
+                  "-Wl,--dynamic-linker=external/_main~_repo_rules~clang_sysroot/lib/ld-linux-x86-64.so.2",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/usr/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib64"
+                ]
+              },
+              "link_libs": {},
+              "llvm_versions": {
+                "": "17.0.6"
+              },
+              "opt_compile_flags": {},
+              "opt_link_flags": {},
+              "stdlib": {
+                "linux-x86_64": "builtin-libc++"
+              },
+              "target_settings": {},
+              "unfiltered_compile_flags": {},
+              "toolchain_roots": {},
+              "sysroot": {
+                "linux-x86_64": "'@@_main~_repo_rules~clang_sysroot//:sysroot_files'"
+              }
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "toolchains_llvm~",
+            "bazel_skylib",
+            "bazel_skylib~"
+          ],
+          [
+            "toolchains_llvm~",
+            "bazel_tools",
+            "bazel_tools"
+          ],
+          [
+            "toolchains_llvm~",
+            "toolchains_llvm",
+            "toolchains_llvm~"
+          ]
+        ]
+      }
     }
   }
 }

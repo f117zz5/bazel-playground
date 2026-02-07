@@ -14,16 +14,8 @@ build:gcc12 --extra_toolchains=//toolchain:gcc_toolchain
 build:gcc10 --extra_toolchains=//toolchain:gcc10_toolchain
 
 # Clang Toolchain Configuration
-# Build with Clang 17.0.6 (via toolchains_llvm)
-# NOTE: Clang 17 is NOT configured in MODULE.bazel because toolchains_llvm
-# restricts its extension to the root module only.  If this repo is used
-# as a dependency, having the llvm extension here would fail for consumers.
-#
-# To use Clang 17 when this repo is the root module, you must add the
-# llvm extension setup to MODULE.bazel (see examples/consumer/MODULE.bazel
-# for the exact code to paste).
-# Then uncomment the line below:
-# build:clang17 --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+# Build with Clang 17.0.6 (via toolchains_llvm, dev_dependency in MODULE.bazel)
+build:clang17 --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
 
 # -------------------------------------------------------------------
 # When used as a DEPENDENCY (consumer references @hermetic_toolchains):
