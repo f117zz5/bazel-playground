@@ -1,6 +1,6 @@
 """
 In this WORKSPACE:
- - load riles_python, then define the python version and pin the requirements
+ - load rules_python, then define the python version and pin the requirements
  - load the direct third_party dependencies
 """
 
@@ -29,7 +29,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "my_pip_install",
-    requirements = "//:requirements_lock.txt", 
+    requirements_lock = "//:requirements_lock.txt", 
     python_interpreter_target = interpreter
 )
 
