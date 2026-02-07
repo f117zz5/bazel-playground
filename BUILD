@@ -1,5 +1,7 @@
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
+exports_files(["config.yaml"])
+
 compile_pip_requirements(
     name = "requirements",
     # extra_args passes pip-compie options, use "-U" ti update for example

@@ -1,0 +1,11 @@
+repositories:
+  - owner: bazelbuild
+    repo: rules_python
+  - owner: psf
+    repo: requests
+  - owner: pytest-dev
+    repo: pytest
+  - owner: google
+    repo: googletest
+  - owner: protocolbuffers
+    repo: protobuf
