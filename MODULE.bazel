@@ -37,6 +37,15 @@ http_archive(
     patch_args = ["-p0"],
 )
 
+# --- Clang sysroot (Bootlin sysroot from stable-2021.11-5, glibc 2.34) ---
+http_archive(
+    name = "clang_sysroot",
+    build_file = "//toolchain:BUILD.clang_sysroot",
+    sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
+    strip_prefix = "x86-64--glibc--stable-2021.11-5/x86_64-buildroot-linux-gnu/sysroot",
+    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+)
+
 # Resolve the absolute path of the gcc_toolchain repos at fetch time.
 # This is required because GCC resolves built-in include paths to absolute
 # filesystem paths, and cxx_builtin_include_directories must match exactly.
@@ -48,7 +57,7 @@ register_toolchains("//toolchain:gcc_toolchain")
 register_toolchains("//toolchain:gcc10_toolchain")
 
 # --- Clang 17 toolchain (via toolchains_llvm) ---
-# Configured with builtin-libc++ for hermetic C++ standard library
+# Configured with builtin-libc++ for hermetic C++ standard library and sysroot
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
     name = "llvm_toolchain",
@@ -56,6 +65,28 @@ llvm.toolchain(
     stdlib = {
         "linux-x86_64": "builtin-libc++",
     },
+    link_flags = {
+        "linux-x86_64": [
+            "--target=x86_64-unknown-linux-gnu",
+            "-lm",
+            "-no-canonical-prefixes",
+            "-fuse-ld=lld",
+            "-Wl,--build-id=md5",
+            "-Wl,--hash-style=gnu",
+            "-Wl,-z,relro,-z,now",
+            "-l:libc++.a",
+            "-l:libc++abi.a",
+            "-Wl,--dynamic-linker=external/_main~_repo_rules~clang_sysroot/lib/ld-linux-x86-64.so.2",
+            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib",
+            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/usr/lib",
+            "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib64",
+        ],
+    },
+)
+llvm.sysroot(
+    name = "llvm_toolchain",
+    targets = ["linux-x86_64"],
+    label = "@clang_sysroot//:sysroot_files",
 )
 use_repo(llvm, "llvm_toolchain")
 register_toolchains("@llvm_toolchain//:all")

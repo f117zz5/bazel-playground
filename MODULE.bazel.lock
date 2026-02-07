@@ -157,7 +157,7 @@
     "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
       "general": {
         "bzlTransitiveDigest": "dZkcElkfice3BvKPXtFwrvPABm8ac+SwfynSinwK4dQ=",
-        "usagesDigest": "Z5mqX+2mVwvIkf88vfX14qX1qYxicr2Xi8gLwwUvfK0=",
+        "usagesDigest": "15zqgxR9DrN9APJ20AAxYShDk/1ta1hXOskzlPRotv0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -197,7 +197,23 @@
               "exec_os": "",
               "extra_exec_compatible_with": {},
               "extra_target_compatible_with": {},
-              "link_flags": {},
+              "link_flags": {
+                "linux-x86_64": [
+                  "--target=x86_64-unknown-linux-gnu",
+                  "-lm",
+                  "-no-canonical-prefixes",
+                  "-fuse-ld=lld",
+                  "-Wl,--build-id=md5",
+                  "-Wl,--hash-style=gnu",
+                  "-Wl,-z,relro,-z,now",
+                  "-l:libc++.a",
+                  "-l:libc++abi.a",
+                  "-Wl,--dynamic-linker=external/_main~_repo_rules~clang_sysroot/lib/ld-linux-x86-64.so.2",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/usr/lib",
+                  "-Wl,-rpath,external/_main~_repo_rules~clang_sysroot/lib64"
+                ]
+              },
               "link_libs": {},
               "llvm_versions": {
                 "": "17.0.6"
@@ -210,7 +226,9 @@
               "target_settings": {},
               "unfiltered_compile_flags": {},
               "toolchain_roots": {},
-              "sysroot": {}
+              "sysroot": {
+                "linux-x86_64": "'@@_main~_repo_rules~clang_sysroot//:sysroot_files'"
+              }
             }
           }
         },
