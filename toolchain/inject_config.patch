@@ -1,6 +1,6 @@
---- a/cc_toolchain_config.bzl	1970-01-01 00:00:00.000000000 +0000
-+++ b/cc_toolchain_config.bzl	2024-02-07 12:00:00.000000000 +0000
-@@ -0,0 +1,149 @@
+--- /dev/null
++++ cc_toolchain_config.bzl
+@@ -0,0 +1,157 @@
 +load("@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl", "tool_path", "feature", "flag_group", "flag_set")
 +
 +# All C/C++ compile action names
@@ -67,6 +67,10 @@
 +    # The cross-tools directory (contains the prefixed ld that collect2 needs)
 +    cross_bin_dir = toolchain_path_prefix + "/" + target_triple + "/bin"
 +
++    # Dynamic linker path for hermetic execution
++    # This makes binaries use the toolchain's glibc instead of the system's
++    dynamic_linker = toolchain_path_prefix + "/" + sysroot_subdir + "/lib/ld-linux-x86-64.so.2"
++
 +    # Built-in include directories — MUST use absolute paths to match what
 +    # GCC reports during compilation. GCC always resolves its own built-in
 +    # include directories to absolute paths regardless of -no-canonical-prefixes
@@ -114,6 +118,10 @@
 +                                "--sysroot=" + sysroot,
 +                                "-B" + bin_dir,
 +                                "-B" + cross_bin_dir,
++                                "-Wl,--dynamic-linker=" + dynamic_linker,
++                                "-Wl,-rpath," + sysroot + "/lib",
++                                "-Wl,-rpath," + sysroot + "/usr/lib",
++                                "-Wl,-rpath," + toolchain_path_prefix + "/" + target_triple + "/lib64",
 +                                "-lstdc++",
 +                                "-lm",
 +                            ],

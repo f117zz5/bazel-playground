@@ -23,7 +23,7 @@ http_archive(
     strip_prefix = "x86-64--glibc--stable-2024.02-1",
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2024.02-1.tar.bz2",
     patches = ["//toolchain:inject_config.patch"],
-    patch_args = ["-p1"],
+    patch_args = ["-p0"],
 )
 
 # --- GCC 10.3 toolchain (Bootlin stable-2021.11-5, closest to GCC 9, glibc 2.34) ---
@@ -34,7 +34,7 @@ http_archive(
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
     patches = ["//toolchain:inject_config.patch"],
-    patch_args = ["-p1"],
+    patch_args = ["-p0"],
 )
 
 # Resolve the absolute path of the gcc_toolchain repos at fetch time.

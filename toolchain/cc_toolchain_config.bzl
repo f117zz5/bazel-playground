@@ -64,6 +64,10 @@ def _impl(ctx):
     # The cross-tools directory (contains the prefixed ld that collect2 needs)
     cross_bin_dir = toolchain_path_prefix + "/" + target_triple + "/bin"
 
+    # Dynamic linker path for hermetic execution
+    # This makes binaries use the toolchain's glibc instead of the system's
+    dynamic_linker = toolchain_path_prefix + "/" + sysroot_subdir + "/lib/ld-linux-x86-64.so.2"
+
     # Built-in include directories — MUST use absolute paths to match what
     # GCC reports during compilation. GCC always resolves its own built-in
     # include directories to absolute paths regardless of -no-canonical-prefixes
@@ -111,6 +115,10 @@ def _impl(ctx):
                                 "--sysroot=" + sysroot,
                                 "-B" + bin_dir,
                                 "-B" + cross_bin_dir,
+                                "-Wl,--dynamic-linker=" + dynamic_linker,
+                                "-Wl,-rpath," + sysroot + "/lib",
+                                "-Wl,-rpath," + sysroot + "/usr/lib",
+                                "-Wl,-rpath," + toolchain_path_prefix + "/" + target_triple + "/lib64",
                                 "-lstdc++",
                                 "-lm",
                             ],
