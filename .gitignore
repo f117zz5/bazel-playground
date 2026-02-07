@@ -1,1 +1,3 @@
-bazel-*
+/.github/*
+/bazel-*
+/learning_bazel.txt

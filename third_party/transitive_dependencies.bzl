@@ -13,6 +13,7 @@ load("//third_party/bazel_skylib:transitive.bzl", "load_bazel_skylib_transitive_
 load("//third_party/buildtools:transitive.bzl", "load_buildtools_transitive_dependencies")
 load("//third_party/protobuf:transitive.bzl", "load_protobuf_transitive_dependencies")
 load("//third_party/rules_go:transitive.bzl", "load_rules_go_transitive_dependencies")
+load("//third_party/rules_python:transitive.bzl", "load_rules_python_transitive_dependencies")
 
 
 def load_transitive_dependencies():
@@ -22,3 +23,4 @@ def load_transitive_dependencies():
     load_buildtools_transitive_dependencies()
     load_protobuf_transitive_dependencies()
     load_rules_go_transitive_dependencies()
+    load_rules_python_transitive_dependencies()

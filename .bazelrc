@@ -1,0 +1,4 @@
+# Bazel configuration file
+
+# Disable bzlmod - use traditional WORKSPACE-based dependency management
+common --noenable_bzlmod
