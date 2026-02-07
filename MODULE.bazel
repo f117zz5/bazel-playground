@@ -1,0 +1,23 @@
+"""
+Bazel module definition for py_youtube
+
+Uses Bzlmod for dependency management instead of WORKSPACE.
+"""
+
+bazel_dep(name = "rules_python", version = "0.24.0")
+bazel_dep(name = "bazel_skylib", version = "1.6.1")
+
+# Configure Python
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+
+# Configure pip
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "my_pip_install",
+    python_version = "3.11",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "my_pip_install")
