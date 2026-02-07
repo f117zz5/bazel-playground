@@ -26,6 +26,7 @@ py_test(
     name = "github_checker_test",
     srcs = ["test_main.py"],
     main = "test_main.py",
+    size = "small",
     deps = [
         ":main_lib",
         requirement("pytest"),
