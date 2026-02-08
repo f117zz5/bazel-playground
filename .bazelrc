@@ -6,6 +6,9 @@ common --enable_bzlmod
 # Force C++17 for cpr
 build --cxxopt=-std=c++17
 
+# Force explicit toolchain selection - fail if no --config is specified
+build --extra_toolchains=//toolchain:force_explicit_config
+
 # GCC Toolchain Configurations
 # Build with GCC 12.3 (default: stable-2024.02-1, glibc 2.39)
 build:gcc12 --extra_toolchains=//toolchain:gcc_toolchain
