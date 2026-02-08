@@ -19,6 +19,7 @@ py_binary(
     srcs = ["main.py"],
     main = "main.py",
     deps = [":main_lib"],
+    visibility = ["//visibility:public"],
 )
 
 # The test

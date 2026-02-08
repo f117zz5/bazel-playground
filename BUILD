@@ -1,6 +1,9 @@
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
-exports_files(["config.yaml"])
+exports_files(
+    ["config.yaml"],
+    visibility = ["//visibility:public"],
+)
 
 compile_pip_requirements(
     name = "requirements",
