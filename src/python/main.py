@@ -3,6 +3,30 @@ import requests
 import sys
 import os
 
+def get_config_path():
+    """Locate config.yaml using Bazel runfiles environment variables."""
+    # Bazel sets RUNFILES_DIR when running via bazel run
+    runfiles_dir = os.getenv('RUNFILES_DIR')
+    if runfiles_dir:
+        # Try current workspace first
+        config_path = os.path.join(runfiles_dir, "my_playground", "config.yaml")
+        if os.path.exists(config_path):
+            return config_path
+        # Try external workspace
+        config_path = os.path.join(runfiles_dir, "hermetic_toolchains~", "config.yaml")
+        if os.path.exists(config_path):
+            return config_path
+    
+    # Fallback for direct execution (without bazel run)
+    # Check relative to script location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    for candidate in ["config.yaml", "../config.yaml", "../../config.yaml"]:
+        config_path = os.path.join(script_dir, candidate)
+        if os.path.exists(config_path):
+            return config_path
+    
+    return None
+
 def get_latest_release(owner, repo):
     url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
     try:
@@ -18,13 +42,10 @@ def get_latest_release(owner, repo):
         return f"Error: {e}"
 
 def main():
-    config_path = "config.yaml"
+    config_path = get_config_path()
     
-    if not os.path.exists(config_path):
-        config_path = "../config.yaml"
-
-    if not os.path.exists(config_path):
-        print(f"Error: Could not find {config_path}")
+    if not config_path:
+        print(f"Error: Could not find config.yaml in runfiles")
         sys.exit(1)
 
     with open(config_path, "r") as f:

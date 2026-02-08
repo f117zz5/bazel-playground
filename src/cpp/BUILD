@@ -17,6 +17,7 @@ cc_binary(
     data = ["//:config.yaml"],
     deps = [
         ":github_client",
+        "@bazel_tools//tools/cpp/runfiles",
         "@yaml-cpp",
     ],
 )

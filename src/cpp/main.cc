@@ -4,20 +4,31 @@
 #include <filesystem>
 #include "yaml-cpp/yaml.h"
 #include "src/cpp/github_client.h"
+#include "tools/cpp/runfiles/runfiles.h"
 
+using bazel::tools::cpp::runfiles::Runfiles;
 namespace fs = std::filesystem;
 
-int main() {
-    std::string config_path = "config.yaml";
+int main(int argc, char** argv) {
+    // Initialize Bazel runfiles
+    std::string error;
+    std::unique_ptr<Runfiles> runfiles(Runfiles::Create(argv[0], &error));
+    if (!runfiles) {
+        std::cerr << "Error initializing runfiles: " << error << std::endl;
+        return 1;
+    }
     
-    // Simple check for config file existence in common locations
+    // Try to locate config.yaml in current workspace
+    std::string config_path = runfiles->Rlocation("my_playground/config.yaml");
+    
+    // If not found, try in parent workspace (if running as external dependency)
     if (!fs::exists(config_path)) {
-        if (fs::exists("../config.yaml")) {
-             config_path = "../config.yaml";
-        } else {
-            std::cerr << "Error: Could not find config.yaml" << std::endl;
-            return 1;
-        }
+        config_path = runfiles->Rlocation("hermetic_toolchains~/config.yaml");
+    }
+    
+    if (!fs::exists(config_path)) {
+        std::cerr << "Error: Could not find config.yaml in runfiles" << std::endl;
+        return 1;
     }
 
     try {
